@@ -343,21 +343,4 @@ namespace easing {
     export function isEasing(sprite: Sprite): boolean {
         return hasJob(sprite)
     }
-
-    /**
-     * Run code when easing finishes for a specific sprite.
-     * The handler runs once for each completion.
-     * @param sprite sprite to watch
-     * @param handler code to run
-     */
-    //% blockId=easing_onFinished
-    //% block="on easing finished for %sprite=variables_get(mySprite)"
-    //% draggableParameters=reporter
-    //% group="Events" weight=50 blockAllowMultiple=1
-    export function onFinished(sprite: Sprite, handler: (s: Sprite) => void): void {
-        // Register for this sprite's id
-        control.onEvent(EVT_SRC, sprite.id, function () {
-            handler(sprite)
-        })
-    }
 }
