@@ -1,9 +1,3 @@
-/**
- * Easing for MakeCode Arcade
- * MIT License
- */
-
-//% color=#FF7F50 icon="\uf1de" block="Easing" weight=90
 namespace easing {
 
     // Internal: single event source for completion notifications
@@ -110,8 +104,8 @@ namespace easing {
             // QUART
             case Mode.InQuart: return t * t * t * t
             case Mode.OutQuart: {
-                const u = t - 1
-                return 1 - u * u * u * u
+                const v = t - 1
+                return 1 - v * v * v * v
             }
             case Mode.InOutQuart: return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * Math.pow(t - 1, 4)
 
@@ -136,8 +130,8 @@ namespace easing {
             // CIRC
             case Mode.InCirc: return 1 - Math.sqrt(1 - t * t)
             case Mode.OutCirc: {
-                const u = t - 1
-                return Math.sqrt(1 - u * u)
+                const w = t - 1
+                return Math.sqrt(1 - w * w)
             }
             case Mode.InOutCirc:
                 return t < 0.5
@@ -150,18 +144,18 @@ namespace easing {
                 return c3 * t * t * t - c1 * t * t
             }
             case Mode.OutBack: {
-                const c1 = 1.70158, c3 = c1 + 1
-                const u = t - 1
-                return 1 + c3 * u * u * u + c1 * u * u
+                const c12 = 1.70158, c32 = c12 + 1
+                const a = t - 1
+                return 1 + c32 * a * a * a + c12 * a * a
             }
             case Mode.InOutBack: {
-                const c1 = 1.70158, c2 = c1 * 1.525
+                const c13 = 1.70158, c2 = c13 * 1.525
                 if (t < 0.5) {
-                    const u = 2 * t
-                    return (u * u * ((c2 + 1) * u - c2)) / 2
+                    const b = 2 * t
+                    return (b * b * ((c2 + 1) * b - c2)) / 2
                 } else {
-                    const u = 2 * t - 2
-                    return (u * u * ((c2 + 1) * u + c2) + 2) / 2
+                    const c = 2 * t - 2
+                    return (c * c * ((c2 + 1) * c + c2) + 2) / 2
                 }
             }
 
@@ -171,8 +165,8 @@ namespace easing {
                 return -Math.pow(2, 10 * t - 10) * Math.sin((t * 10 - 10.75) * c4)
             }
             case Mode.OutElastic: {
-                const c4 = (2 * Math.PI) / 3
-                return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1
+                const c42 = (2 * Math.PI) / 3
+                return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c42) + 1
             }
             case Mode.InOutElastic: {
                 const c5 = (2 * Math.PI) / 4.5
@@ -220,6 +214,7 @@ namespace easing {
         ms: number
         mode: Mode
         done: boolean
+        progress: number
 
         constructor(sprite: Sprite, x1: number, y1: number, ms: number, mode: Mode) {
             this.sprite = sprite
@@ -231,6 +226,7 @@ namespace easing {
             this.ms = Math.max(1, ms | 0)
             this.mode = mode
             this.done = false
+            this.progress = 0
         }
 
         update(now: number) {
@@ -238,6 +234,7 @@ namespace easing {
             if (!this.sprite) { this.done = true; return }
 
             const t = Math.min(1, (now - this.start) / this.ms)
+            this.progress = t
             const e = applyEase(this.mode, t)
             this.sprite.x = this.x0 + (this.x1 - this.x0) * e
             this.sprite.y = this.y0 + (this.y1 - this.y0) * e
@@ -268,15 +265,15 @@ namespace easing {
 
     function cancelInternal(sprite: Sprite) {
         if (!sprite) return
-        for (let i = jobs.length - 1; i >= 0; i--) {
-            if (jobs[i].sprite === sprite) {
-                jobs.splice(i, 1)
+        for (let k = jobs.length - 1; k >= 0; k--) {
+            if (jobs[k].sprite === sprite) {
+                jobs.splice(k, 1)
             }
         }
     }
 
     function hasJob(sprite: Sprite): boolean {
-        for (let j of jobs) if (j.sprite === sprite) return true
+        for (let l of jobs) if (l.sprite === sprite) return true
         return false
     }
 
@@ -319,7 +316,7 @@ namespace easing {
      */
     //% blockId=easing_cancel
     //% block="cancel easing on %sprite=variables_get(mySprite)"
-    //% group="Control" weight=80
+    //% group="Cancel" weight=80
     export function cancel(sprite: Sprite): void {
         cancelInternal(sprite)
     }
@@ -329,7 +326,7 @@ namespace easing {
      */
     //% blockId=easing_cancelAll
     //% block="cancel all easings"
-    //% group="Control" weight=70
+    //% group="Cancel" weight=70
     export function cancelAll(): void {
         jobs = []
     }
@@ -339,8 +336,23 @@ namespace easing {
      */
     //% blockId=easing_isEasing
     //% block="is %sprite=variables_get(mySprite) easing?"
-    //% group="Control" weight=60
+    //% group="Easing Extra" weight=60
     export function isEasing(sprite: Sprite): boolean {
         return hasJob(sprite)
+    }
+
+    /**
+     * Get the easing interval of a current easing sprite (between 0 and 1).
+     */
+    //% easing_get_interpolationValue
+    //% block="easing interpolation value of %sprite"
+    //% group="Easing Extra" weight=50
+    export function getEaseProgress(sprite: Sprite): number {
+        for (let job of jobs) {
+            if (job.sprite == sprite && !job.done) {
+                return job.progress
+            }
+        }
+        return 0
     }
 }
