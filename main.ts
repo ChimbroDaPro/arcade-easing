@@ -319,8 +319,7 @@ namespace easing {
     //% inlineInputMode=inline
     //% group="Move" weight=100
     export function easeTo(sprite: Sprite, x: number, y: number, ms: number, mode: Mode = Mode.InOutQuad): number {
-        if (!sprite) return -1
-        // cancel position jobs on same sprite
+        if (!sprite) return 0
         for (let i = jobs.length - 1; i >= 0; i--) {
             if (jobs[i].sprite === sprite && jobs[i].type === "pos") jobs.splice(i, 1)
         }
@@ -531,7 +530,7 @@ namespace easing {
      * Event: on easing finished for sprite.
      */
     //% blockId=easing_onFinished
-    //% block="on easing finished for %sprite=variables_get(mySprite)"
+    //% block="on easing finished for %sprite"
     //% draggableParameters=reporter
     //% group="Events" weight=50 blockAllowMultiple=1
     export function onFinished(sprite: Sprite, handler: (s: Sprite) => void): void {
