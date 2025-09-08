@@ -1,6 +1,6 @@
 {
     "name": "Arcade Easing",
-    "description": "",
+    "description": "Easing functionality in MakeCode Arcade!",
     "dependencies": {
         "device": "*"
     },

@@ -1,3 +1,4 @@
+//% color=#b8b328 icon="\uf1c8" block="Easing" weight=90
 namespace easing {
 
     // Internal: single event source for completion notifications
@@ -234,8 +235,8 @@ namespace easing {
             if (!this.sprite) { this.done = true; return }
 
             const t = Math.min(1, (now - this.start) / this.ms)
-            this.progress = t
             const e = applyEase(this.mode, t)
+            this.progress = e
             this.sprite.x = this.x0 + (this.x1 - this.x0) * e
             this.sprite.y = this.y0 + (this.y1 - this.y0) * e
 
@@ -277,7 +278,7 @@ namespace easing {
         return false
     }
 
-    // ===== Public Blocks =====
+    // ===== External Blocks =====
 
     /**
      * Ease a sprite to a target position over time using the selected easing curve.
@@ -345,7 +346,7 @@ namespace easing {
      * Get the easing interval of a current easing sprite (between 0 and 1).
      */
     //% easing_get_interpolationValue
-    //% block="easing interpolation value of %sprite"
+    //% block="easing interpolation value of %sprite=variables_get(mySprite)"
     //% group="Easing Extra" weight=50
     export function getEaseProgress(sprite: Sprite): number {
         for (let job of jobs) {
