@@ -91,8 +91,13 @@ namespace easing {
         //% block="bounce in-out"
         InOutBounce
     }
+    export enum ReturnKind {
+        //% block="job id"
+        JobId = 0,
+        //% block="eased value"
+        EasedValue
+    }
 
-    // internal event source for finished sprite easing (unused for numeric easing)
     const EVT_SRC = 0xE453
 
     // ---------- Easing math ----------
@@ -228,9 +233,8 @@ namespace easing {
         update(now: number) {
             if (this.done) return
             const t = Math.min(1, (now - this.start) / this.ms)
-            this.progress = t
             const e = applyEase(this.mode, t)
-
+            this.progress = e
             switch (this.type) {
                 case "pos":
                     if (this.sprite) {
@@ -240,13 +244,9 @@ namespace easing {
                     break
                 case "scale":
                     if (this.sprite) {
-                        // setScale exists in MakeCode Arcade — call it
-                        // We assume setScale(sprite, scale) is available; in some runtimes there's no getter, so we stored s0 at start
                         try {
                             (this.sprite as any).setScale(this.s0 + (this.s1 - this.s0) * e)
                         } catch (err) {
-                            // fallback: try property assignment (not guaranteed)
-                            // do nothing else; we keep trying.
                         }
                     }
                     break
@@ -255,10 +255,8 @@ namespace easing {
                     scene.centerCameraAt(Math.round(this.cx0 + (this.cx1 - this.cx0) * e), Math.round(this.cy0 + (this.cy1 - this.cy0) * e))
                     break
                 case "value":
-                    if (this.handler) {
-                        const val = this.v0 + (this.v1 - this.v0) * e
-                        this.handler(val)
-                    }
+                    const val = this.v0 + (this.v1 - this.v0) * e
+                    jobValues[this.id] = val
                     break
             }
 
@@ -273,6 +271,7 @@ namespace easing {
     }
 
     let jobs: Job[] = []
+    let jobValues: { [id: number]: number } = {}
     let nextId = 1
     let runnerStarted = false
 
@@ -319,7 +318,7 @@ namespace easing {
     //% inlineInputMode=inline
     //% group="Move" weight=100
     export function easeTo(sprite: Sprite, x: number, y: number, ms: number, mode: Mode = Mode.InOutQuad): number {
-        if (!sprite) return 0
+        if (!sprite) return -1
         for (let i = jobs.length - 1; i >= 0; i--) {
             if (jobs[i].sprite === sprite && jobs[i].type === "pos") jobs.splice(i, 1)
         }
@@ -420,17 +419,20 @@ namespace easing {
     //% block="ease number from %v0 to %v1 over %ms (ms) using %mode do %handler"
     //% draggableParameters=reporter
     //% group="Generic" weight=78
-    export function easeNumberFromTo(v0: number, v1: number, ms: number, mode: Mode, handler: (v: number) => void): number {
+    export function easeNumberFromTo(v0: number, v1: number, ms: number, mode: Mode, ret: ReturnKind = ReturnKind.JobId): number {
         const j = new Job(nextId++)
         j.type = "value"
         j.v0 = v0
         j.v1 = v1
-        j.handler = handler
         j.start = game.runtime()
         j.ms = Math.max(1, ms | 0)
         j.mode = mode
         pushJob(j)
-        return j.id
+        if (ret === ReturnKind.JobId) {
+            return j.id
+        } else {
+            return jobValues[j.id]
+        }
     }
 
     /**
