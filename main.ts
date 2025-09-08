@@ -1,4 +1,4 @@
-//% color=#fcca56 icon="\uf1de" block="Easing" weight=90
+//% color=#fab107 icon="\uf1de" block="Easing" weight=90
 namespace easing {
 
     // Internal: single event source for completion notifications
