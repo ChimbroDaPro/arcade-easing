@@ -16,6 +16,7 @@
 
 //% color=#FF7F50 icon="\uf1de" block="Easing" weight=90
 namespace easing {
+
     export enum Mode {
         //% block="linear"
         Linear = 0,
@@ -204,7 +205,7 @@ namespace easing {
         // value
         v0: number
         v1: number
-        handler: ((value: number, jobId: number) => void) | null
+        handler: ((v: number) => void) | null
         start: number
         ms: number
         mode: Mode
@@ -281,7 +282,8 @@ namespace easing {
             if (jobs.length === 0) return
             const now = game.runtime()
             for (let i = jobs.length - 1; i >= 0; i--) {
-                if (!jobs[i].done) jobs[i].update(now)
+                jobs[i].update(now)
+                if (jobs[i].done) jobs.splice(i, 1)
             }
         })
     }
@@ -317,6 +319,9 @@ namespace easing {
     //% group="Move" weight=100
     export function easeTo(sprite: Sprite, x: number, y: number, ms: number, mode: Mode = Mode.InOutQuad): number {
         if (!sprite) return -1
+        for (let i = jobs.length - 1; i >= 0; i--) {
+            if (jobs[i].sprite === sprite && jobs[i].type === "pos") jobs.splice(i, 1)
+        }
         const j = new Job(nextId++)
         j.type = "pos"
         j.sprite = sprite
@@ -353,6 +358,10 @@ namespace easing {
     //% group="Scale" weight=85
     export function easeScaleTo(sprite: Sprite, toScale: number, ms: number, mode: Mode = Mode.InOutQuad, startScale?: number): number {
         if (!sprite) return -1
+        // remove existing scale jobs
+        for (let i = jobs.length - 1; i >= 0; i--) {
+            if (jobs[i].sprite === sprite && jobs[i].type === "scale") jobs.splice(i, 1)
+        }
         const j = new Job(nextId++)
         j.type = "scale"
         j.sprite = sprite
@@ -389,6 +398,7 @@ namespace easing {
     export function easeCameraTo(x: number, y: number, ms: number, mode: Mode = Mode.Linear): number {
         const j = new Job(nextId++)
         j.type = "camera"
+        // store current center as start (we compute from screen and camera)
         j.cx0 = getCameraCenter().x
         j.cy0 = getCameraCenter().y
         j.cx1 = x
@@ -407,18 +417,22 @@ namespace easing {
      */
     //% blockId=easing_easeNumberFromTo
     //% block="ease number from %v0 to %v1 over %ms (ms) using %mode do %handler"
-    //% draggableParameters=(value,jobId)
+    //% draggableParameters=reporter
     //% group="Generic" weight=78
-    export function easeNumberFromTo(v0: number, v1: number, ms: number, mode: Mode, handler: (value: number, jobId: number) => void): void {
+    export function easeNumberFromTo(v0: number, v1: number, ms: number, mode: Mode, ret: ReturnKind = ReturnKind.JobId): number {
         const j = new Job(nextId++)
         j.type = "value"
         j.v0 = v0
         j.v1 = v1
-        j.handler = handler
         j.start = game.runtime()
         j.ms = Math.max(1, ms | 0)
         j.mode = mode
         pushJob(j)
+        if (ret === ReturnKind.JobId) {
+            return j.id
+        } else {
+            return jobValues[j.id]
+        }
     }
 
     /**
@@ -429,7 +443,7 @@ namespace easing {
     //% group="Control" weight=70
     export function cancelJob(jobId: number): void {
         for (let i = jobs.length - 1; i >= 0; i--) {
-            if (jobs[i].id === jobId) jobs[i].done = true
+            if (jobs[i].id === jobId) jobs.splice(i, 1)
         }
     }
 
@@ -442,7 +456,7 @@ namespace easing {
     export function cancel(sprite: Sprite): void {
         if (!sprite) return
         for (let i = jobs.length - 1; i >= 0; i--) {
-            if (jobs[i].sprite === sprite) jobs[i].done = true
+            if (jobs[i].sprite === sprite) jobs.splice(i, 1)
         }
     }
 
@@ -455,7 +469,7 @@ namespace easing {
     export function cancelTag(tag: string): void {
         if (!tag) return
         for (let i = jobs.length - 1; i >= 0; i--) {
-            if (jobs[i].tag === tag) jobs[i].done = true
+            if (jobs[i].tag === tag) jobs.splice(i, 1)
         }
     }
 
@@ -466,9 +480,7 @@ namespace easing {
     //% block="cancel all easings"
     //% group="Control" weight=60
     export function cancelAll(): void {
-        for (let job of jobs) {
-        job.done = true
-        }
+        jobs = []
     }
 
     /**
@@ -521,9 +533,9 @@ namespace easing {
      */
     //% blockId=easing_onFinished
     //% block="on easing finished for %sprite"
-    //% draggableParameters=(sprite, s)
+    //% draggableParameters=reporter
     //% group="Events" weight=50 blockAllowMultiple=1
-    export function onFinished(sprite: Sprite, handler: (sprite: Sprite) => void): void {
+    export function onFinished(sprite: Sprite, handler: (s: Sprite) => void): void {
         control.onEvent(EVT_SRC, sprite.id, function () {
             handler(sprite)
         })
