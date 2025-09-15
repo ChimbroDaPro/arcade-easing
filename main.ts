@@ -205,7 +205,7 @@ namespace easing {
         // value
         v0: number
         v1: number
-        handler: ((v: number) => void) | null
+        handler: ((v: number, jobId: number) => void) | null
         start: number
         ms: number
         mode: Mode
@@ -255,8 +255,10 @@ namespace easing {
                     scene.centerCameraAt(Math.round(this.cx0 + (this.cx1 - this.cx0) * e), Math.round(this.cy0 + (this.cy1 - this.cy0) * e))
                     break
                 case "value":
+                if (this.handler) {
                     const val = this.v0 + (this.v1 - this.v0) * e
-                    jobValues[this.id] = val
+                    this.handler(val, this.id)
+                }
                     break
             }
 
@@ -271,7 +273,7 @@ namespace easing {
     }
 
     let jobs: Job[] = []
-    let jobValues: { [id: number]: number } = {}
+    let namedValueHandlers: { [name: string]: (v: number, jobId: number) => void } = {}
     let nextId = 1
     let runnerStarted = false
 
@@ -431,9 +433,55 @@ namespace easing {
         if (ret === ReturnKind.JobId) {
             return j.id
         } else {
-            return jobValues[j.id]
+            return j.id
         }
     }
+
+    /**
+ * Define (register) a named easing function. The handler receives (value, jobId).
+ * The handler must NOT return anything. Use this to store a function that you will launch later.
+ * @param name name for this easing handler
+ * @param handler function (value, jobId) to call each frame with the eased value and the job id
+ */
+    //% blockId=easing_setupEaseFunc
+    //% block="setup easing function named %name do %handler"
+    //% draggableParameters=reporter
+    //% group="Generic" weight=77
+    export function setupEaseFunc(name: string, handler: (v: number, jobId: number) => void): void {
+        if (!name) return
+        namedValueHandlers[name] = handler
+    }
+
+    /**
+ * Launch a previously defined easing function (by name), easing value from v0 -> v1.
+ * The registered handler is called each frame with (value, jobId).
+ * This block returns nothing — the handler itself is responsible for using jobId if needed.
+ */
+    //% blockId=easing_launchEaseFunc
+    //% block="launch easing function named %name from %v0 to %v1 over %ms (ms) using %mode"
+    //% inlineInputMode=inline
+    //% group="Generic" weight=76
+    export function launchEaseFunc(name: string, v0: number, v1: number, ms: number, mode: Mode = Mode.InOutQuad): void {
+        const h = namedValueHandlers[name]
+        if (!h) {
+            // nothing registered under this name — silently ignore (you can add a debug message if you want)
+            return
+        }
+
+        const j = new Job(nextId++)
+        j.type = "value"
+        j.v0 = v0
+        j.v1 = v1
+        j.start = game.runtime()
+        j.ms = Math.max(1, ms | 0)
+        j.mode = mode
+        j.handler = function (val: number) {
+            h(val, j.id)
+        }
+        pushJob(j)
+    }
+
+
 
     /**
      * Cancel a job by job id.
