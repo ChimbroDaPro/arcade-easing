@@ -205,7 +205,7 @@ namespace easing {
         // value
         v0: number
         v1: number
-        handler: ((v: number, jobId: number) => void) | null
+        handler: ((v: number) => void) | null
         start: number
         ms: number
         mode: Mode
@@ -257,7 +257,7 @@ namespace easing {
                 case "value":
                 if (this.handler) {
                     const val = this.v0 + (this.v1 - this.v0) * e
-                    this.handler(val, this.id)
+                    this.handler(val)
                 }
                     break
             }
@@ -273,7 +273,7 @@ namespace easing {
     }
 
     let jobs: Job[] = []
-    let namedValueHandlers: { [name: string]: (v: number, jobId: number) => void } = {}
+    let namedValueHandlers: { [name: string]: (v: number) => void } = {}
     let nextId = 1
     let runnerStarted = false
 
@@ -439,15 +439,14 @@ namespace easing {
 
     /**
  * Define (register) a named easing function. The handler receives (value, jobId).
- * The handler must NOT return anything. Use this to store a function that you will launch later.
- * @param name name for this easing handler
- * @param handler function (value, jobId) to call each frame with the eased value and the job id
+ * Use this to store a function that you will launch later.
+ * @param handler function (value) to call each frame with the eased value and the job id
  */
     //% blockId=easing_setupEaseFunc
     //% block="setup easing function named %name do %handler"
     //% draggableParameters=reporter
     //% group="Generic" weight=77
-    export function setupEaseFunc(name: string, handler: (v: number, jobId: number) => void): void {
+    export function setupEaseFunc(name: string, handler: (v: number) => void): void {
         if (!name) return
         namedValueHandlers[name] = handler
     }
@@ -476,7 +475,7 @@ namespace easing {
         j.ms = Math.max(1, ms | 0)
         j.mode = mode
         j.handler = function (val: number) {
-            h(val, j.id)
+            h(val)
         }
         pushJob(j)
     }
