@@ -205,7 +205,7 @@ namespace easing {
         // value
         v0: number
         v1: number
-        handler: ((v: number) => void) | null
+        handler: ((v: number, j: number) => void) | null
         start: number
         ms: number
         mode: Mode
@@ -257,7 +257,7 @@ namespace easing {
                 case "value":
                 if (this.handler) {
                     const val = this.v0 + (this.v1 - this.v0) * e
-                    this.handler(val)
+                    this.handler(val, this.id)
                 }
                     break
             }
@@ -273,7 +273,7 @@ namespace easing {
     }
 
     let jobs: Job[] = []
-    let namedValueHandlers: { [name: string]: (v: number) => void } = {}
+    let namedValueHandlers: { [name: string]: (v: number, j: number) => void } = {}
     let nextId = 1
     let runnerStarted = false
 
@@ -443,10 +443,10 @@ namespace easing {
  * @param handler function (value) to call each frame with the eased value and the job id
  */
     //% blockId=easing_setupEaseFunc
-    //% block="setup easing function named %name do %v"
+    //% block="setup easing function named %name with %value=1 %jobId=nextId++"
     //% draggableParameters=reporter
     //% group="Generic" weight=77
-    export function setupEaseFunc(name: string, handler: (v: number) => void): void {
+    export function setupEaseFunc(name: string, handler: (value: number, jobId: number) => void): void {
         if (!name) return
         if (!handler) return
         namedValueHandlers[name] = handler
@@ -475,7 +475,7 @@ namespace easing {
         j.ms = Math.max(1, ms | 0)
         j.mode = mode
         j.handler = function (val: number) {
-            h(val)
+            h(val, j.id)
         }
         pushJob(j)
     }
