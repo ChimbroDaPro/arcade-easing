@@ -443,11 +443,12 @@ namespace easing {
  * @param handler function (value) to call each frame with the eased value and the job id
  */
     //% blockId=easing_setupEaseFunc
-    //% block="setup easing function named %name do %handler"
+    //% block="setup easing function named %name do %v"
     //% draggableParameters=reporter
     //% group="Generic" weight=77
     export function setupEaseFunc(name: string, handler: (v: number) => void): void {
         if (!name) return
+        if (!handler) return
         namedValueHandlers[name] = handler
     }
 
@@ -463,7 +464,6 @@ namespace easing {
     export function launchEaseFunc(name: string, v0: number, v1: number, ms: number, mode: Mode = Mode.InOutQuad): void {
         const h = namedValueHandlers[name]
         if (!h) {
-            // nothing registered under this name — silently ignore (you can add a debug message if you want)
             return
         }
 
