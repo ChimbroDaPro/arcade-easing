@@ -1,5 +1,3 @@
-//% color=#fab107 ico="\uf1de" block="Easing" weight=90
-
 /**
  * Easing for MakeCode Arcade — Expanded
  * - position easing (easeTo / easeBy)
@@ -255,10 +253,10 @@ namespace easing {
                     scene.centerCameraAt(Math.round(this.cx0 + (this.cx1 - this.cx0) * e), Math.round(this.cy0 + (this.cy1 - this.cy0) * e))
                     break
                 case "value":
-                if (this.handler) {
-                    const val = this.v0 + (this.v1 - this.v0) * e
-                    this.handler(val, this.id)
-                }
+                    if (this.handler) {
+                        const val = this.v0 + (this.v1 - this.v0) * e
+                        this.handler(val, this.id)
+                    }
                     break
             }
 
@@ -411,8 +409,9 @@ namespace easing {
         pushJob(j)
         return j.id
     }
+
     /**
-     * Ease any numeric value from v0 -> v1. The handler will be called each frame with the eased value.
+     * Ease any numeric value from v0 -> v1. The handler will be called each frame with the eased value and job id.
      * Use draggable reporter to set your own property inside the handler (e.g. sprite.setScale(value)).
      *
      * Returns job id.
@@ -421,7 +420,7 @@ namespace easing {
     //% block="ease number from %v0 to %v1 over %ms (ms) using %mode do %handler"
     //% draggableParameters=reporter
     //% group="Generic" weight=78
-    export function easeNumberFromTo(v0: number, v1: number, ms: number, mode: Mode, ret: ReturnKind = ReturnKind.JobId): number {
+    export function easeNumberFromTo(v0: number, v1: number, ms: number, mode: Mode, handler: (value: number, jobId: number) => void): number {
         const j = new Job(nextId++)
         j.type = "value"
         j.v0 = v0
@@ -429,21 +428,19 @@ namespace easing {
         j.start = game.runtime()
         j.ms = Math.max(1, ms | 0)
         j.mode = mode
+        // wire handler so it receives (value, jobId)
+        if (handler) j.handler = handler
         pushJob(j)
-        if (ret === ReturnKind.JobId) {
-            return j.id
-        } else {
-            return j.id
-        }
+        return j.id
     }
 
     /**
- * Define (register) a named easing function. The handler receives (value, jobId).
- * Use this to store a function that you will launch later.
- * @param handler function (value) to call each frame with the eased value and the job id
- */
+     * Define (register) a named easing function. The handler receives (value, jobId).
+     * Use this to store a function that you will launch later.
+     * @param handler function (value, jobId) to call each frame with the eased value and the job id
+     */
     //% blockId=easing_setupEaseFunc
-    //% block="setup easing function named %name with %value=1 %jobId=nextId++"
+    //% block="setup easing function named %name with %handler"
     //% draggableParameters=reporter
     //% group="Generic" weight=77
     export function setupEaseFunc(name: string, handler: (value: number, jobId: number) => void): void {
@@ -453,10 +450,10 @@ namespace easing {
     }
 
     /**
- * Launch a previously defined easing function (by name), easing value from v0 -> v1.
- * The registered handler is called each frame with (value, jobId).
- * This block returns nothing — the handler itself is responsible for using jobId if needed.
- */
+     * Launch a previously defined easing function (by name), easing value from v0 -> v1.
+     * The registered handler is called each frame with (value, jobId).
+     * This block returns nothing — the handler itself is responsible for using jobId if needed.
+     */
     //% blockId=easing_launchEaseFunc
     //% block="launch easing function named %name from %v0 to %v1 over %ms (ms) using %mode"
     //% inlineInputMode=inline
@@ -474,13 +471,10 @@ namespace easing {
         j.start = game.runtime()
         j.ms = Math.max(1, ms | 0)
         j.mode = mode
-        j.handler = function (val: number) {
-            h(val, j.id)
-        }
+        // simply use the registered handler (it expects value, jobId)
+        j.handler = h
         pushJob(j)
     }
-
-
 
     /**
      * Cancel a job by job id.
@@ -579,7 +573,7 @@ namespace easing {
      * Event: on easing finished for sprite.
      */
     //% blockId=easing_onFinished
-    //% block="on easing finished for %sprite"
+    //% block="on easing finished for %sprite=variables_get(mySprite)"
     //% draggableParameters=reporter
     //% group="Events" weight=50 blockAllowMultiple=1
     export function onFinished(sprite: Sprite, handler: (s: Sprite) => void): void {
