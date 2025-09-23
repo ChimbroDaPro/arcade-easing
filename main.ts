@@ -404,7 +404,7 @@
      */
     //% blockId=easing_setupEaseFunc
     //% value.defl=0
-    //% block="setup easing function named %name with %value"
+    //% block="setup easing function named $name with $handler"
     //% draggableParameters=reporter
     //% group="Generic" weight=77
     export function setupEaseFunc(name: string, handler: (value: number) => void) {
