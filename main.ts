@@ -532,8 +532,8 @@
     /**
      * Cancel an easing by easing id.
      */
-    //% blockId=easing_cancelJob
-    //% block="cancel easing job id %jobId"
+    //% blockId=easing_cancelEasing
+    //% block="cancel easing id %jobId"
     //% group="Control" weight=70
     export function cancelEasing(easingId: number): void {
         for (let q = jobs.length - 1; q >= 0; q--) {
@@ -555,7 +555,7 @@
     }
 
     /**
-     * Cancel by tag (useful if you tag job(s) when creating).
+     * Cancel by tag (useful if you tag easings when creating).
      */
     //% blockId=easing_cancelTag
     //% block="cancel easings tagged %tag"
@@ -580,17 +580,17 @@
     }
 
     /**
-     * Set a tag on a job (for later cancellation). Use the returned job id from creation.
+     * Set a tag on an easing (for later cancellation). Use the returned easing id from creation.
      */
     //% blockId=easing_setTag
     //% block="tag job id %jobId as %tag"
     //% group="Control" weight=58
-    export function setJobTag(jobId: number, tag: string): void {
+    export function setEasingTag(jobId: number, tag: string): void {
         for (let d of jobs) if (d.id === jobId) d.tag = tag
     }
 
     /**
-     * Query if a sprite has any active easing jobs.
+     * Query if a sprite has any active easings.
      */
     //% blockId=easing_isEasing
     //% block="is %sprite=variables_get(mySprite) easing?"
@@ -614,27 +614,14 @@
     }
 
     /**
-     * Get easing progress for a job id. Returns -1 if not found.
+     * Get easing progress for an easing id. Returns -1 if not found.
      */
     //% blockId=easing_getProgressForId
-    //% block="easing progress of job id %jobId"
+    //% block="easing progress of easing id %jobId"
     //% group="Control" weight=53
     export function getEaseProgressById(jobId: number): number {
         for (let j2 of jobs) if (j2.id === jobId) return j2.progress
         return -1
-    }
-
-    /**
-     * Event: on easing finished for sprite.
-     */
-    //% blockId=easing_onFinished
-    //% block="on easing finished for %sprite=variables_get(mySprite)"
-    //% draggableParameters=reporter
-    //% group="Events" weight=50 blockAllowMultiple=1
-    export function onFinished(sprite: Sprite, handler: (s: Sprite) => void): void {
-        control.onEvent(EVT_SRC, sprite.id, function () {
-            handler(sprite)
-        })
     }
 
     // ---------- Backwards compatibility helpers ----------
