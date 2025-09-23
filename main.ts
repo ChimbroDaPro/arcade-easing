@@ -1,18 +1,3 @@
-/**
- * Easing for MakeCode Arcade — Expanded
- * - position easing (easeTo / easeBy)
- * - scale easing (easeScaleTo / easeScaleBy)
- * - camera easing (easeCameraTo)
- * - generic numeric easing with callback (easeNumberFromTo)
- * - job ids, tags, cancellation by id/sprite/tag/all
- * - progress query by sprite or id
- *
- * Notes:
- * - easeScaleTo: If you don't pass a startScale, 1 is assumed (MakeCode doesn't reliably expose a getter).
- * - easeCameraTo: camera should not be actively following a sprite, otherwise results will conflict.
- */
-
-//% color=#FF7F50 icon="\uf1de" block="Easing" weight=90
 namespace easing {
 
     export enum Mode {
@@ -132,7 +117,7 @@ namespace easing {
             case Mode.InOutCubic: return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1
 
             case Mode.InQuart: return t * t * t * t
-            case Mode.OutQuart: { const u = t - 1; return 1 - u * u * u * u }
+            case Mode.OutQuart: { const v = t - 1; return 1 - v * v * v * v }
             case Mode.InOutQuart: return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * Math.pow(t - 1, 4)
 
             case Mode.InQuint: return Math.pow(t, 5)
@@ -148,24 +133,24 @@ namespace easing {
             case Mode.InOutExpo: return t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2
 
             case Mode.InCirc: return 1 - Math.sqrt(1 - t * t)
-            case Mode.OutCirc: { const u = t - 1; return Math.sqrt(1 - u * u) }
+            case Mode.OutCirc: { const w = t - 1; return Math.sqrt(1 - w * w) }
             case Mode.InOutCirc: return t < 0.5 ? (1 - Math.sqrt(1 - 4 * t * t)) / 2 : (Math.sqrt(1 - Math.pow(2 * t - 2, 2)) + 1) / 2
 
             case Mode.InBack: { const c1 = 1.70158, c3 = c1 + 1; return c3 * t * t * t - c1 * t * t }
-            case Mode.OutBack: { const c1 = 1.70158, c3 = c1 + 1; const u = t - 1; return 1 + c3 * u * u * u + c1 * u * u }
+            case Mode.OutBack: { const c12 = 1.70158, c32 = c12 + 1; const a = t - 1; return 1 + c32 * a * a * a + c12 * a * a }
             case Mode.InOutBack: {
-                const c1 = 1.70158, c2 = c1 * 1.525
+                const c13 = 1.70158, c2 = c13 * 1.525
                 if (t < 0.5) {
-                    const u = 2 * t
-                    return (u * u * ((c2 + 1) * u - c2)) / 2
+                    const b = 2 * t
+                    return (b * b * ((c2 + 1) * b - c2)) / 2
                 } else {
-                    const u = 2 * t - 2
-                    return (u * u * ((c2 + 1) * u + c2) + 2) / 2
+                    const c = 2 * t - 2
+                    return (c * c * ((c2 + 1) * c + c2) + 2) / 2
                 }
             }
 
             case Mode.InElastic: { const c4 = (2 * Math.PI) / 3; return -Math.pow(2, 10 * t - 10) * Math.sin((t * 10 - 10.75) * c4) }
-            case Mode.OutElastic: { const c4 = (2 * Math.PI) / 3; return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1 }
+            case Mode.OutElastic: { const c42 = (2 * Math.PI) / 3; return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c42) + 1 }
             case Mode.InOutElastic: {
                 const c5 = (2 * Math.PI) / 4.5
                 if (t < 0.5) return -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2
@@ -319,21 +304,21 @@ namespace easing {
     //% group="Move" weight=100
     export function easeTo(sprite: Sprite, x: number, y: number, ms: number, mode: Mode = Mode.InOutQuad): number {
         if (!sprite) return -1
-        for (let i = jobs.length - 1; i >= 0; i--) {
-            if (jobs[i].sprite === sprite && jobs[i].type === "pos") jobs.splice(i, 1)
+        for (let k = jobs.length - 1; k >= 0; k--) {
+            if (jobs[k].sprite === sprite && jobs[k].type === "pos") jobs.splice(k, 1)
         }
-        const j = new Job(nextId++)
-        j.type = "pos"
-        j.sprite = sprite
-        j.x0 = sprite.x
-        j.y0 = sprite.y
-        j.x1 = x
-        j.y1 = y
-        j.start = game.runtime()
-        j.ms = Math.max(1, ms | 0)
-        j.mode = mode
-        pushJob(j)
-        return j.id
+        const l = new Job(nextId++)
+        l.type = "pos"
+        l.sprite = sprite
+        l.x0 = sprite.x
+        l.y0 = sprite.y
+        l.x1 = x
+        l.y1 = y
+        l.start = game.runtime()
+        l.ms = Math.max(1, ms | 0)
+        l.mode = mode
+        pushJob(l)
+        return l.id
     }
 
     /**
@@ -359,19 +344,19 @@ namespace easing {
     export function easeScaleTo(sprite: Sprite, toScale: number, ms: number, mode: Mode = Mode.InOutQuad, startScale?: number): number {
         if (!sprite) return -1
         // remove existing scale jobs
-        for (let i = jobs.length - 1; i >= 0; i--) {
-            if (jobs[i].sprite === sprite && jobs[i].type === "scale") jobs.splice(i, 1)
+        for (let m = jobs.length - 1; m >= 0; m--) {
+            if (jobs[m].sprite === sprite && jobs[m].type === "scale") jobs.splice(m, 1)
         }
-        const j = new Job(nextId++)
-        j.type = "scale"
-        j.sprite = sprite
-        j.s0 = (startScale === undefined) ? 1 : startScale
-        j.s1 = toScale
-        j.start = game.runtime()
-        j.ms = Math.max(1, ms | 0)
-        j.mode = mode
-        pushJob(j)
-        return j.id
+        const n = new Job(nextId++)
+        n.type = "scale"
+        n.sprite = sprite
+        n.s0 = (startScale === undefined) ? 1 : startScale
+        n.s1 = toScale
+        n.start = game.runtime()
+        n.ms = Math.max(1, ms | 0)
+        n.mode = mode
+        pushJob(n)
+        return n.id
     }
 
     /**
@@ -396,43 +381,20 @@ namespace easing {
     //% inlineInputMode=inline
     //% group="Camera" weight=80
     export function easeCameraTo(x: number, y: number, ms: number, mode: Mode = Mode.Linear): number {
-        const j = new Job(nextId++)
-        j.type = "camera"
+        const o = new Job(nextId++)
+        o.type = "camera"
         // store current center as start (we compute from screen and camera)
-        j.cx0 = getCameraCenter().x
-        j.cy0 = getCameraCenter().y
-        j.cx1 = x
-        j.cy1 = y
-        j.start = game.runtime()
-        j.ms = Math.max(1, ms | 0)
-        j.mode = mode
-        pushJob(j)
-        return j.id
-    }
+        o.cx0 = getCameraCenter().x
+        o.cy0 = getCameraCenter().y
+        o.cx1 = x
+        o.cy1 = y
+        o.start = game.runtime()
+        o.ms = Math.max(1, ms | 0)
+        o.mode = mode
+        pushJob(o)
+        return o.id
+    } 
 
-    /**
-     * Ease any numeric value from v0 -> v1. The handler will be called each frame with the eased value and job id.
-     * Use draggable reporter to set your own property inside the handler (e.g. sprite.setScale(value)).
-     *
-     * Returns job id.
-     */
-    //% blockId=easing_easeNumberFromTo
-    //% block="ease number from %v0 to %v1 over %ms (ms) using %mode do %handler"
-    //% draggableParameters=reporter
-    //% group="Generic" weight=78
-    export function easeNumberFromTo(v0: number, v1: number, ms: number, mode: Mode, handler: (value: number, jobId: number) => void): number {
-        const j = new Job(nextId++)
-        j.type = "value"
-        j.v0 = v0
-        j.v1 = v1
-        j.start = game.runtime()
-        j.ms = Math.max(1, ms | 0)
-        j.mode = mode
-        // wire handler so it receives (value, jobId)
-        if (handler) j.handler = handler
-        pushJob(j)
-        return j.id
-    }
 
     /**
      * Define (register) a named easing function. The handler receives (value, jobId).
@@ -440,10 +402,11 @@ namespace easing {
      * @param handler function (value, jobId) to call each frame with the eased value and the job id
      */
     //% blockId=easing_setupEaseFunc
-    //% block="setup easing function named %name with %handler"
+    //% value.defl=0
+    //% block="setup easing function named %name with %value"
     //% draggableParameters=reporter
     //% group="Generic" weight=77
-    export function setupEaseFunc(name: string, handler: (value: number, jobId: number) => void): void {
+    export function setupEaseFunc(name: string, handler: (value: number, jobId: number) => void) {
         if (!name) return
         if (!handler) return
         namedValueHandlers[name] = handler
@@ -464,16 +427,16 @@ namespace easing {
             return
         }
 
-        const j = new Job(nextId++)
-        j.type = "value"
-        j.v0 = v0
-        j.v1 = v1
-        j.start = game.runtime()
-        j.ms = Math.max(1, ms | 0)
-        j.mode = mode
+        const p = new Job(nextId++)
+        p.type = "value"
+        p.v0 = v0
+        p.v1 = v1
+        p.start = game.runtime()
+        p.ms = Math.max(1, ms | 0)
+        p.mode = mode
         // simply use the registered handler (it expects value, jobId)
-        j.handler = h
-        pushJob(j)
+        p.handler = h
+        pushJob(p)
     }
 
     /**
@@ -483,8 +446,8 @@ namespace easing {
     //% block="cancel easing job id %jobId"
     //% group="Control" weight=70
     export function cancelJob(jobId: number): void {
-        for (let i = jobs.length - 1; i >= 0; i--) {
-            if (jobs[i].id === jobId) jobs.splice(i, 1)
+        for (let q = jobs.length - 1; q >= 0; q--) {
+            if (jobs[q].id === jobId) jobs.splice(q, 1)
         }
     }
 
@@ -496,8 +459,8 @@ namespace easing {
     //% group="Control" weight=75
     export function cancel(sprite: Sprite): void {
         if (!sprite) return
-        for (let i = jobs.length - 1; i >= 0; i--) {
-            if (jobs[i].sprite === sprite) jobs.splice(i, 1)
+        for (let r = jobs.length - 1; r >= 0; r--) {
+            if (jobs[r].sprite === sprite) jobs.splice(r, 1)
         }
     }
 
@@ -509,8 +472,8 @@ namespace easing {
     //% group="Control" weight=69
     export function cancelTag(tag: string): void {
         if (!tag) return
-        for (let i = jobs.length - 1; i >= 0; i--) {
-            if (jobs[i].tag === tag) jobs.splice(i, 1)
+        for (let s = jobs.length - 1; s >= 0; s--) {
+            if (jobs[s].tag === tag) jobs.splice(s, 1)
         }
     }
 
@@ -531,7 +494,7 @@ namespace easing {
     //% block="tag job id %jobId as %tag"
     //% group="Control" weight=58
     export function setJobTag(jobId: number, tag: string): void {
-        for (let j of jobs) if (j.id === jobId) j.tag = tag
+        for (let d of jobs) if (d.id === jobId) d.tag = tag
     }
 
     /**
@@ -541,7 +504,7 @@ namespace easing {
     //% block="is %sprite=variables_get(mySprite) easing?"
     //% group="Control" weight=56
     export function isEasing(sprite: Sprite): boolean {
-        for (let j of jobs) if (j.sprite === sprite && !j.done) return true
+        for (let f of jobs) if (f.sprite === sprite && !f.done) return true
         return false
     }
 
@@ -552,8 +515,8 @@ namespace easing {
     //% block="easing progress of %sprite=variables_get(mySprite)"
     //% group="Control" weight=54
     export function getEaseProgress(sprite: Sprite): number {
-        for (let j of jobs) {
-            if (j.sprite === sprite && !j.done) return j.progress
+        for (let g of jobs) {
+            if (g.sprite === sprite && !g.done) return g.progress
         }
         return -1
     }
@@ -565,7 +528,7 @@ namespace easing {
     //% block="easing progress of job id %jobId"
     //% group="Control" weight=53
     export function getEaseProgressById(jobId: number): number {
-        for (let j of jobs) if (j.id === jobId) return j.progress
+        for (let j2 of jobs) if (j2.id === jobId) return j2.progress
         return -1
     }
 
@@ -591,4 +554,3 @@ namespace easing {
         easeTo(sprite, x, y, ms, mode)
     }
 }
-

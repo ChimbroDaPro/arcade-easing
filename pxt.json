@@ -1,8 +1,9 @@
 {
-    "name": "Arcade Easing",
+    "name": "Arcade Easing - Copy",
     "description": "Easing functionality in MakeCode Arcade!",
     "dependencies": {
-        "device": "*"
+        "device": "*",
+        "arcade-sprite-util": "github:jwunderl/arcade-sprite-util#v0.4.1"
     },
     "files": [
         "main.blocks",
