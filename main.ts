@@ -1,4 +1,6 @@
-namespace easing {
+	//% color=#FF7F50 ico="\uf1de" block="Easing" weight=90
+    
+    namespace easing {
 
     export enum Mode {
         //% block="linear"
