@@ -269,8 +269,7 @@
             if (jobs.length === 0) return
             const now = game.runtime()
             for (let i = jobs.length - 1; i >= 0; i--) {
-                jobs[i].update(now)
-                if (jobs[i].done) jobs.splice(i, 1)
+                if (!jobs[i].done) jobs[i].update(now)
             }
         })
     }
@@ -297,8 +296,7 @@
     // ---------- External Blocks ----------
     
     /**
-     * Ease a sprite to a target position. Returns a job id.
-     * Overwrites any existing easing of this sprite (pos/scale) unless you choose to keep multiple.
+     * Ease a sprite to a target position. Doesn't return an easing id.
      */
     //% blockId=easing_blockEaseTo
     //% block="ease %sprite=variables_get(mySprite) to x %x y %y over %ms (ms) using %mode"
@@ -307,7 +305,7 @@
     export function blockEaseTo(sprite: Sprite, x: number, y: number, ms: number, mode: Mode = Mode.InOutQuad) {
         if (!sprite) return
         for (let k = jobs.length - 1; k >= 0; k--) {
-            if (jobs[k].sprite === sprite && jobs[k].type === "pos") jobs.splice(k, 1)
+            if (jobs[k].sprite === sprite && jobs[k].type === "pos") jobs[k].done = true
         }
         const l = new Job(nextId++)
         l.type = "pos"
@@ -322,8 +320,7 @@
         pushJob(l)
     }
     /**
-     * Ease a sprite to a target position. Returns a job id.
-     * Overwrites any existing easing of this sprite (pos/scale).
+     * Ease a sprite to a target position. Returns an easing id.
      */
     //% blockId=easing_easeTo
     //% block="ease %sprite=variables_get(mySprite) to x %x y %y over %ms (ms) using %mode"
@@ -332,7 +329,7 @@
     export function easeTo(sprite: Sprite, x: number, y: number, ms: number, mode: Mode = Mode.InOutQuad): number {
         if (!sprite) return -1
         for (let k = jobs.length - 1; k >= 0; k--) {
-            if (jobs[k].sprite === sprite && jobs[k].type === "pos") jobs.splice(k, 1)
+            if (jobs[k].sprite === sprite && jobs[k].type === "pos") jobs[k].done = true
         }
         const l = new Job(nextId++)
         l.type = "pos"
@@ -385,7 +382,7 @@
         export function blockEaseScaleTo(sprite: Sprite, toScale: number, ms: number, mode: Mode = Mode.InOutQuad, startScale?: number) {
             if (!sprite) return
             for (let m = jobs.length - 1; m >= 0; m--) {
-                if (jobs[m].sprite === sprite && jobs[m].type === "scale") jobs.splice(m, 1)
+                if (jobs[m].sprite === sprite && jobs[m].type === "scale") jobs[m].done = true
             }
             const n = new Job(nextId++)
             n.type = "scale"
@@ -401,7 +398,7 @@
 
     /**
      * Ease the scale of a sprite. If startScale is omitted, 1 is assumed.
-     * Returns job id.
+     * Returns an easing id.
      */
     //% blockId=easing_easeScaleTo
     //% block="ease scale of %sprite=variables_get(mySprite) to %toScale over %ms (ms) using %mode (start %startScale)"
@@ -411,7 +408,7 @@
         if (!sprite) return -1
         // remove existing scale jobs
         for (let m = jobs.length - 1; m >= 0; m--) {
-            if (jobs[m].sprite === sprite && jobs[m].type === "scale") jobs.splice(m, 1)
+            if (jobs[m].sprite === sprite && jobs[m].type === "scale") jobs[m].done = true
         }
         const n = new Job(nextId++)
         n.type = "scale"
@@ -427,7 +424,7 @@
 
     /**
      * Ease the scale of a sprite by delta (relative).
-     * Returns job id.
+     * Returns an easing id.
      */
     //% blockId=easing_easeScaleBy
     //% block="ease scale of %sprite=variables_get(mySprite) by %dScale over %ms (ms) using %mode (start %startScale)"
@@ -439,7 +436,7 @@
     }
 
     /**
-     * Ease the camera center to a given (x,y). Returns job id.
+     * Ease the camera center to a given (x,y). Returns an easing id.
      * NOTE: If camera is following a sprite, it will override manual centering.
      */
     //% blockId=easing_easeCameraTo
@@ -449,7 +446,6 @@
     export function easeCameraTo(x: number, y: number, ms: number, mode: Mode = Mode.Linear): number {
         const o = new Job(nextId++)
         o.type = "camera"
-        // store current center as start (we compute from screen and camera)
         o.cx0 = getCameraCenter().x
         o.cy0 = getCameraCenter().y
         o.cx1 = x
@@ -475,8 +471,8 @@
 
     /**
      * Launch a previously defined easing function (by name), easing value from v0 -> v1.
-     * The registered handler is called each frame with (value, jobId).
-     * This block returns nothing — the handler itself is responsible for using jobId if needed.
+     * The registered handler is called each frame with (value).
+     * This block returns nothing.
      */
     //% blockId=easing_launchEaseFunc
     //% block="launch easing function named %name from %v0 to %v1 over %ms (ms) using %mode"
@@ -495,25 +491,24 @@
         p.start = game.runtime()
         p.ms = Math.max(1, ms | 0)
         p.mode = mode
-        // simply use the registered handler (it expects value, jobId)
         p.handler = h
         pushJob(p)
     }
 
     /**
-     * Cancel a job by job id.
+     * Cancel an easing by easing id.
      */
     //% blockId=easing_cancelJob
     //% block="cancel easing job id %jobId"
     //% group="Control" weight=70
-    export function cancelJob(jobId: number): void {
+    export function cancelEasing(easingId: number): void {
         for (let q = jobs.length - 1; q >= 0; q--) {
-            if (jobs[q].id === jobId) jobs.splice(q, 1)
+            if (jobs[q].id === easingId) jobs[q].done = true
         }
     }
 
     /**
-     * Cancel easing on a sprite (any job type attached to the sprite).
+     * Cancel easing on a sprite (any easing type attached to the sprite).
      */
     //% blockId=easing_cancelSprite
     //% block="cancel easing on %sprite=variables_get(mySprite)"
@@ -521,7 +516,7 @@
     export function cancel(sprite: Sprite): void {
         if (!sprite) return
         for (let r = jobs.length - 1; r >= 0; r--) {
-            if (jobs[r].sprite === sprite) jobs.splice(r, 1)
+            if (jobs[r].sprite === sprite) jobs[r].done = true
         }
     }
 
@@ -534,7 +529,7 @@
     export function cancelTag(tag: string): void {
         if (!tag) return
         for (let s = jobs.length - 1; s >= 0; s--) {
-            if (jobs[s].tag === tag) jobs.splice(s, 1)
+            if (jobs[s].tag === tag) jobs[s].done = true
         }
     }
 
@@ -545,7 +540,9 @@
     //% block="cancel all easings"
     //% group="Control" weight=60
     export function cancelAll(): void {
-        jobs = []
+        for (let s = jobs.length - 1; s>= 0; s--) {
+            jobs[s].done = true
+        }
     }
 
     /**
@@ -612,6 +609,6 @@
      */
     //% blockHidden=true
     export function easeToVoid(sprite: Sprite, x: number, y: number, ms: number, mode: Mode = Mode.InOutQuad): void {
-        easeTo(sprite, x, y, ms, mode)
+        blockEaseTo(sprite, x, y, ms, mode)
     }
 }
