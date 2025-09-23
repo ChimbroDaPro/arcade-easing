@@ -295,15 +295,40 @@
     }
 
     // ---------- External Blocks ----------
-
+    
     /**
      * Ease a sprite to a target position. Returns a job id.
      * Overwrites any existing easing of this sprite (pos/scale) unless you choose to keep multiple.
      */
-    //% blockId=easing_easeTo
+    //% blockId=easing_blockEaseTo
     //% block="ease %sprite=variables_get(mySprite) to x %x y %y over %ms (ms) using %mode"
     //% inlineInputMode=inline
     //% group="Move" weight=100
+    export function blockEaseTo(sprite: Sprite, x: number, y: number, ms: number, mode: Mode = Mode.InOutQuad) {
+        if (!sprite) return
+        for (let k = jobs.length - 1; k >= 0; k--) {
+            if (jobs[k].sprite === sprite && jobs[k].type === "pos") jobs.splice(k, 1)
+        }
+        const l = new Job(nextId++)
+        l.type = "pos"
+        l.sprite = sprite
+        l.x0 = sprite.x
+        l.y0 = sprite.y
+        l.x1 = x
+        l.y1 = y
+        l.start = game.runtime()
+        l.ms = Math.max(1, ms | 0)
+        l.mode = mode
+        pushJob(l)
+    }
+    /**
+     * Ease a sprite to a target position. Returns a job id.
+     * Overwrites any existing easing of this sprite (pos/scale).
+     */
+    //% blockId=easing_easeTo
+    //% block="ease %sprite=variables_get(mySprite) to x %x y %y over %ms (ms) using %mode"
+    //% inlineInputMode=inline
+    //% group="Move" weight=99
     export function easeTo(sprite: Sprite, x: number, y: number, ms: number, mode: Mode = Mode.InOutQuad): number {
         if (!sprite) return -1
         for (let k = jobs.length - 1; k >= 0; k--) {
@@ -323,8 +348,22 @@
         return l.id
     }
 
+        /**
+         * Ease a sprite by delta.
+         * Does not return an easing id.
+         */
+        //% blockId=easing_blockEaseBy
+        //% block="ease %sprite=variables_get(mySprite) by dx %dx dy %dy over %ms (ms) using %mode"
+        //% inlineInputMode=inline
+        //% group="Move" weight=91
+        export function blockEaseBy(sprite: Sprite, dx: number, dy: number, ms: number, mode: Mode = Mode.InOutQuad) {
+            if (!sprite) return
+            blockEaseTo(sprite, sprite.x + dx, sprite.y + dy, ms, mode)
+        }
+
     /**
      * Ease a sprite by delta.
+     * Returns an easing id.
      */
     //% blockId=easing_easeBy
     //% block="ease %sprite=variables_get(mySprite) by dx %dx dy %dy over %ms (ms) using %mode"
@@ -334,6 +373,31 @@
         if (!sprite) return -1
         return easeTo(sprite, sprite.x + dx, sprite.y + dy, ms, mode)
     }
+
+        /**
+         * Ease the scale of a sprite. If startScale is omitted, 1 is assumed.
+         * Does not return an easing id.
+         */
+        //% blockId=easing_blockEaseScaleTo
+        //% block="ease scale of %sprite=variables_get(mySprite) to %toScale over %ms (ms) using %mode (start %startScale)"
+        //% inlineInputMode=inline
+        //% group="Scale" weight=86
+        export function blockEaseScaleTo(sprite: Sprite, toScale: number, ms: number, mode: Mode = Mode.InOutQuad, startScale?: number) {
+            if (!sprite) return
+            for (let m = jobs.length - 1; m >= 0; m--) {
+                if (jobs[m].sprite === sprite && jobs[m].type === "scale") jobs.splice(m, 1)
+            }
+            const n = new Job(nextId++)
+            n.type = "scale"
+            n.sprite = sprite
+            n.s0 = (startScale === undefined) ? 1 : startScale
+            n.s1 = toScale
+            n.start = game.runtime()
+            n.ms = Math.max(1, ms | 0)
+            n.mode = mode
+            pushJob(n)
+        }
+
 
     /**
      * Ease the scale of a sprite. If startScale is omitted, 1 is assumed.
