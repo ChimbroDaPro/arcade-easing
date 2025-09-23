@@ -398,31 +398,16 @@
     } 
 
         /**
-         * Register a named easing callback.
+         * Register a named easing callback (make an easing function)
          */
         //% blockId=easing_setupEaseFunc
-        //% block="setup easing function named $name with $handler"
+        //% block="setup easing function named $name"
         //% draggableParameters=reporter
         //% group="Generic" weight=77
-        export function setupEaseFunct(name: string, handler: (value: number) => void): void {
+        export function setupEaseFunc(name: string, handler: (value: number) => void): void {
             if (!name || !handler) return;
             namedValueHandlers[name] = handler;
         }
-
-    /**
-     * Define (register) a named easing function. The handler receives (value).
-     * Use this to store a function that you will launch later.
-     */
-    //% blockId=easing_setupEaseFunc
-    //% value.defl=0
-    //% block="setup easing function named $name with $handler"
-    //% draggableParameters=reporter
-    //% group="Generic" weight=77
-    export function setupEaseFunc(name: string, handler: (value: number) => void) {
-        if (!name) return
-        if (!handler) return
-        namedValueHandlers[name] = handler
-    }
 
     /**
      * Launch a previously defined easing function (by name), easing value from v0 -> v1.
