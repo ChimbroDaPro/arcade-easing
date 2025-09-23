@@ -422,6 +422,19 @@
         return n.id
     }
 
+        /**
+     * Ease the scale of a sprite by delta (relative).
+     * Returns an easing id.
+     */
+        //% blockId=easing_easeScaleBy
+        //% block="ease scale of %sprite=variables_get(mySprite) by %dScale over %ms (ms) using %mode (start %startScale)"
+        //% inlineInputMode=inline
+        //% group="Scale" weight=84
+        export function blockEaseScaleBy(sprite: Sprite, dScale: number, ms: number, mode: Mode = Mode.InOutQuad, startScale?: number) {
+            const s0 = (startScale === undefined) ? 1 : startScale
+            blockEaseScaleTo(sprite, s0 + dScale, ms, mode, s0)
+        }
+
     /**
      * Ease the scale of a sprite by delta (relative).
      * Returns an easing id.
@@ -434,6 +447,27 @@
         const s0 = (startScale === undefined) ? 1 : startScale
         return easeScaleTo(sprite, s0 + dScale, ms, mode, s0)
     }
+
+        /**
+         * Ease the camera center to a given (x,y). Doesn't return an easing id.
+         * NOTE: If camera is following a sprite, it will override manual centering.
+         */
+        //% blockId=easing_blockEaseCameraTo
+        //% block="ease camera to x %x y %y over %ms (ms) using %mode"
+        //% inlineInputMode=inline
+        //% group="Camera" weight=81
+        export function blockEaseCameraTo(x: number, y: number, ms: number, mode: Mode = Mode.Linear) {
+            const o = new Job(nextId++)
+            o.type = "camera"
+            o.cx0 = getCameraCenter().x
+            o.cy0 = getCameraCenter().y
+            o.cx1 = x
+            o.cy1 = y
+            o.start = game.runtime()
+            o.ms = Math.max(1, ms | 0)
+            o.mode = mode
+            pushJob(o)
+        }
 
     /**
      * Ease the camera center to a given (x,y). Returns an easing id.
