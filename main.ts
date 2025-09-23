@@ -583,7 +583,7 @@
      * Set a tag on an easing (for later cancellation). Use the returned easing id from creation.
      */
     //% blockId=easing_setTag
-    //% block="tag job id %jobId as %tag"
+    //% block="tag easing id %jobId as %tag"
     //% group="Control" weight=58
     export function setEasingTag(jobId: number, tag: string): void {
         for (let d of jobs) if (d.id === jobId) d.tag = tag
