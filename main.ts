@@ -680,7 +680,7 @@
          * Replay all easings with a given tag.
          */
         //% blockId=easing_replayTag
-        //% block="replay easings tagged %tag (use current sprite position %useCurrentPosition)"
+        //% block="replay easings tagged %tag"
         //% inlineInputMode=inline
         //% group="Control" weight=64
         export function replayTag(tag: string) {
