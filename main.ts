@@ -628,7 +628,7 @@
      * Replay a finished (or existing) easing by easing id.
      */
         //% blockId=easing_replayEasing
-        //% block="replay easing job id %jobId"
+        //% block="replay easing id %jobId"
         //% inlineInputMode=inline
         //% group="Control" weight=65
         export function replayJob(jobId: number) {
