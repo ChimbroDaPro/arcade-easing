@@ -426,7 +426,7 @@
      * Ease the scale of a sprite by delta (relative).
      * Doesn't return an easing id.
      */
-        //% blockId=easing_easeScaleBy
+        //% blockId=easing_blockEaseScaleBy
         //% block="ease scale of %sprite=variables_get(mySprite) by %dScale over %ms (ms) using %mode (start %startScale)"
         //% inlineInputMode=inline
         //% group="Scale" weight=84

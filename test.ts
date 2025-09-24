@@ -25,3 +25,6 @@ easing.launchEaseFunc("test", 0, 0, 0, easing.Mode.Linear)
 easing.setupEaseFunc("", function(value: number) {
     
 })
+easing.blockEaseScaleBy(null, 0, 0, easing.Mode.Linear, 0)
+
+let hi = easing.easeScaleBy(null, 0, 0, easing.Mode.Linear, 0)
