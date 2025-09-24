@@ -424,7 +424,7 @@
 
         /**
      * Ease the scale of a sprite by delta (relative).
-     * Returns an easing id.
+     * Doesn't return an easing id.
      */
         //% blockId=easing_easeScaleBy
         //% block="ease scale of %sprite=variables_get(mySprite) by %dScale over %ms (ms) using %mode (start %startScale)"
@@ -442,7 +442,7 @@
     //% blockId=easing_easeScaleBy
     //% block="ease scale of %sprite=variables_get(mySprite) by %dScale over %ms (ms) using %mode (start %startScale)"
     //% inlineInputMode=inline
-    //% group="Scale" weight=84
+    //% group="Scale" weight=83
     export function easeScaleBy(sprite: Sprite, dScale: number, ms: number, mode: Mode = Mode.InOutQuad, startScale?: number): number {
         const s0 = (startScale === undefined) ? 1 : startScale
         return easeScaleTo(sprite, s0 + dScale, ms, mode, s0)
@@ -625,7 +625,7 @@
     }
 
         /**
-     * Replay a finished (or existing) easing by easing id.
+     * Replay an easing by easing id.
      */
         //% blockId=easing_replayEasing
         //% block="replay easing id %jobId"
