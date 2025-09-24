@@ -1,5 +1,6 @@
 {
     "name": "Arcade Easing - Copy",
+    "version": "1.0.0",
     "description": "Easing functionality in MakeCode Arcade!",
     "dependencies": {
         "device": "*",
