@@ -625,23 +625,19 @@
     }
 
         /**
-     * Replay a finished (or existing) easing by easinh id.
-     * Returns the new easing id, or -1 if not found.
-     * @param useCurrentPosition if true and the job is a pos easing with a sprite, start from the sprite's current x/y
+     * Replay a finished (or existing) easing by easing id.
      */
-        //% blockId=easing_replayJob
-        //% block="replay easing job id %jobId (use current sprite position %useCurrentPosition)"
+        //% blockId=easing_replayEasing
+        //% block="replay easing job id %jobId"
         //% inlineInputMode=inline
         //% group="Control" weight=65
-        export function replayJob(jobId: number, useCurrentPosition: boolean = true) {
-            // find original job
+        export function replayJob(jobId: number) {
             let orig: Job | null = null
             for (let j of jobs) {
                 if (j.id === jobId) { orig = j; break }
             }
             if (!orig) return
 
-            // clone into a new Job
             const nj = new Job(nextId++)
             nj.type = orig.type
             nj.sprite = orig.sprite
@@ -650,13 +646,9 @@
             nj.ms = orig.ms
             nj.handler = orig.handler
 
-            // copy fields depending on type; optionally use current sprite position
             switch (orig.type) {
                 case "pos":
-                    if (orig.sprite && useCurrentPosition) {
-                        nj.x0 = orig.sprite.x
-                        nj.y0 = orig.sprite.y
-                    } else {
+                    if (orig.sprite) {
                         nj.x0 = orig.x0
                         nj.y0 = orig.y0
                     }
@@ -678,8 +670,6 @@
                     nj.v1 = orig.v1
                     break
             }
-
-            // restart timing
             nj.start = game.runtime()
             nj.done = false
             nj.progress = 0
@@ -688,19 +678,17 @@
 
         /**
          * Replay all easings with a given tag.
-         * Returns the number of easings replayed.
-         * @param useCurrentPosition if true and a job is a pos easing with a sprite, start from the sprite's current x/y
          */
         //% blockId=easing_replayTag
         //% block="replay easings tagged %tag (use current sprite position %useCurrentPosition)"
         //% inlineInputMode=inline
         //% group="Control" weight=64
-        export function replayTag(tag: string, useCurrentPosition: boolean = true) {
+        export function replayTag(tag: string) {
             if (!tag) return
             const snapshot = jobs.slice(0)
             for (let orig of snapshot) {
                 if (orig.tag === tag) {
-                    replayJob(orig.id, useCurrentPosition)
+                    replayJob(orig.id)
                 }
             }
         }
